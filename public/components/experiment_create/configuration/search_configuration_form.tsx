@@ -1,3 +1,8 @@
+/*
+ * Copyright OpenSearch Contributors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import React, { useEffect, useState } from 'react';
 import { EuiFlexGroup, EuiFlexItem, EuiFormRow, EuiComboBox } from '@elastic/eui';
 import { SearchConfigOption, SearchConfigFromData } from './types';
@@ -18,13 +23,12 @@ export const SearchConfigForm = ({ formData, onChange, http }: SearchConfigFormP
     const fetchSearchConfigurations = async () => {
       try {
         const data = await http.get(ServiceEndpoints.SearchConfigurations);
-        const options = data.hits.hits.map((search_config: any) => ({
-          label: search_config._source.name,
-          value: search_config._source.id,
+        const options = data.hits.hits.map((searchConfig: any) => ({
+          label: searchConfig._source.name,
+          value: searchConfig._source.id,
         }));
         setSearchConfigOptions(options);
       } catch (error) {
-        console.error('Failed to fetch search configurations', error);
         setSearchConfigOptions([]);
       } finally {
         setIsLoadingConfigs(false);

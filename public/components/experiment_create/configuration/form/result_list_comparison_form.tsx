@@ -1,3 +1,8 @@
+/*
+ * Copyright OpenSearch Contributors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import React, { useEffect, useState } from 'react';
 import { EuiFlexGroup, EuiFlexItem, EuiFormRow, EuiComboBox, EuiFieldNumber } from '@elastic/eui';
 import { ResultListComparisonFormData, QuerySetOption } from '../types';
@@ -29,7 +34,6 @@ export const ResultListComparisonForm = ({
         }));
         setQuerySetOptions(options);
       } catch (error) {
-        console.error('Failed to fetch query sets', error);
         setQuerySetOptions([]);
       } finally {
         setIsLoading(false);

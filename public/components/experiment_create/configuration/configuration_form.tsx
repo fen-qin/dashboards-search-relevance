@@ -1,5 +1,9 @@
+/*
+ * Copyright OpenSearch Contributors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import React, { useState, useEffect } from 'react';
-import { EuiButton, EuiFlexGroup, EuiFlexItem, EuiFormRow } from '@elastic/eui';
 import { ResultListComparisonForm } from './form/result_list_comparison_form';
 import { UserBehaviorForm } from './form/user_behavior_form';
 import { LLMForm } from './form/llm_form';
@@ -26,16 +30,12 @@ const getInitialFormData = (templateType: string): ConfigurationFormData => {
     case 'User Behavior':
       return {
         ...baseData,
-        startDate: '',
-        endDate: '',
-        collectSignal: '',
-        scoreThreshold: '',
+        judgmentId: '',
       };
     case 'LLM':
       return {
         ...baseData,
         modelId: '',
-        scoreThreshold: '',
       };
     default:
       return (baseData as unknown) as
@@ -67,10 +67,6 @@ export const ConfigurationForm = ({ templateType, onSave }: ConfigurationFormPro
     }));
   };
 
-  const handleSave = () => {
-    onSave(formData);
-  };
-
   const renderForm = () => {
     switch (templateType) {
       case 'Result List Comparison':
@@ -83,22 +79,14 @@ export const ConfigurationForm = ({ templateType, onSave }: ConfigurationFormPro
         );
       case 'User Behavior':
         return (
-          <UserBehaviorForm formData={formData as UserBehaviorFormData} onChange={handleChange} />
+          <UserBehaviorForm
+            formData={formData as UserBehaviorFormData}
+            onChange={handleChange}
+            http={http}
+          />
         );
       case 'LLM':
-        return (
-          <>
-            <LLMForm formData={formData as LLMFormData} onChange={handleChange} />
-
-            <EuiFlexGroup justifyContent="flexEnd">
-              <EuiFlexItem grow={false}>
-                <EuiFormRow hasEmptyLabelSpace>
-                  <EuiButton onClick={handleSave}>Save Judgement</EuiButton>
-                </EuiFormRow>
-              </EuiFlexItem>
-            </EuiFlexGroup>
-          </>
-        );
+        return <LLMForm formData={formData as LLMFormData} onChange={handleChange} http={http} />;
       default:
         return null;
     }

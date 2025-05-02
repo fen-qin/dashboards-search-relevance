@@ -1,5 +1,18 @@
+/*
+ * Copyright OpenSearch Contributors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 import React, { useState, useEffect, useRef } from 'react';
-import { EuiPanel, EuiEmptyPrompt, EuiPage, EuiPageBody, EuiPageContent, EuiSuperSelect, EuiFormRow } from '@elastic/eui';
+import {
+  EuiPanel,
+  EuiEmptyPrompt,
+  EuiPage,
+  EuiPageBody,
+  EuiPageContent,
+  EuiSuperSelect,
+  EuiFormRow,
+} from '@elastic/eui';
 
 import './visual_comparison.scss';
 import { ItemDetailHoverPane } from './item_detail_hover_pane';
@@ -22,11 +35,11 @@ export const convertFromSearchResult = (searchResult) => {
 
   return searchResult.hits.hits.map((x, index) => ({
     _id: x._id,
-    _score: x._score, 
+    _score: x._score,
     rank: index + 1,
-    ...x._source
+    ...x._source,
   }));
-}
+};
 
 export const VisualComparison = ({
   queryResult1,
@@ -40,11 +53,9 @@ export const VisualComparison = ({
   // State for selected display field
   const [displayField, setDisplayField] = useState('_id');
   const [imageFieldName, setImageFieldName] = useState(null);
-  
+
   // Available fields for display - will be updated based on actual data
-  const [displayFields, setDisplayFields] = useState([
-    { value: '_id', label: 'ID' }
-  ]);
+  const [displayFields, setDisplayFields] = useState([{ value: '_id', label: 'ID' }]);
 
   // State for hover item details
   const [hoveredItem, setHoveredItem] = useState(null);
@@ -54,12 +65,12 @@ export const VisualComparison = ({
   // Refs for elements
   const result1ItemsRef = useRef({});
   const result2ItemsRef = useRef({});
-  
+
   // State to track if component has mounted
   const [mounted, setMounted] = useState(false);
   // State to track if we have valid results
   const [initialState, setInitialState] = useState(true);
-  
+
   // Process the results into the format we need
   const [result1, setResult1] = useState([]);
   const [result2, setResult2] = useState([]);
@@ -72,7 +83,7 @@ export const VisualComparison = ({
     onlyInResult2: 0,
     unchanged: 0,
     improved: 0,
-    worsened: 0
+    worsened: 0,
   });
 
   const vennDiagram = (
@@ -82,13 +93,13 @@ export const VisualComparison = ({
         <div className="venn-value">{statistics.onlyInResult1}</div>
         <div className="venn-label">Unique</div>
       </div>
-      
+
       {/* Intersection (middle) */}
       <div className="venn-middle">
         <div className="venn-value">{statistics.inBoth}</div>
         <div className="venn-label">Common</div>
       </div>
-      
+
       {/* Result 2 rectangle (right) */}
       <div className="venn-right">
         <div className="venn-value">{statistics.onlyInResult2}</div>
@@ -118,26 +129,22 @@ export const VisualComparison = ({
       const sampleItem = queryResult1[0] || queryResult2[0];
       if (sampleItem) {
         const fields = Object.keys(sampleItem)
-          .filter(key => !key.startsWith('_')) // Exclude hidden fields
-          .filter(key =>
-            typeof sampleItem[key]==='string'
-          )
-          .map(key => ({ value: key, label: key.charAt(0).toUpperCase() + key.slice(1) }));
-        
+          .filter((key) => !key.startsWith('_')) // Exclude hidden fields
+          .filter((key) => typeof sampleItem[key] === 'string')
+          .map((key) => ({ value: key, label: key.charAt(0).toUpperCase() + key.slice(1) }));
+
         // Find a field that might contain image names or URLs
         let imageField = null;
         if (sampleItem) {
           // Look for fields with common image-related names
           const possibleImageFields = ['image', 'img', 'thumbnail', 'picture', 'photo', 'avatar'];
-          imageField = Object.keys(sampleItem).find(key =>
-            possibleImageFields.some(imgField =>
-              key.toLowerCase().includes(imgField)
-            )
+          imageField = Object.keys(sampleItem).find((key) =>
+            possibleImageFields.some((imgField) => key.toLowerCase().includes(imgField))
           );
 
           // If no obvious image field found, look for fields with URL patterns that might be images
           if (!imageField) {
-            imageField = Object.keys(sampleItem).find(key => {
+            imageField = Object.keys(sampleItem).find((key) => {
               const value = String(sampleItem[key] || '');
               return (
                 value.match(/\.(jpg|jpeg|png|gif|svg|webp)($|\?)/i) ||
@@ -156,10 +163,7 @@ export const VisualComparison = ({
         }
 
         // Always include _id at the beginning
-        setDisplayFields([
-          { value: '_id', label: 'ID' },
-          ...fields
-        ]);
+        setDisplayFields([{ value: '_id', label: 'ID' }, ...fields]);
 
         // Optionally set a preferred display field if an image field was found
         if (imageField) {
@@ -177,8 +181,8 @@ export const VisualComparison = ({
     const combined = [...result1];
 
     // Add items that are only in result2
-    result2.forEach(item2 => {
-      const exists = combined.some(item => item._id === item2._id);
+    result2.forEach((item2) => {
+      const exists = combined.some((item) => item._id === item2._id);
       if (!exists) {
         combined.push(item2);
       }
@@ -187,21 +191,20 @@ export const VisualComparison = ({
     setCombinedData(combined);
 
     // Calculate summary statistics
-    const inBoth = result1.filter(item1 => 
-      result2.some(item2 => item2._id === item1._id)
-    ).length;
+    const inBoth = result1.filter((item1) => result2.some((item2) => item2._id === item1._id))
+      .length;
     const onlyInResult1 = result1.length - inBoth;
     const onlyInResult2 = result2.length - inBoth;
-    const unchanged = result1.filter(item1 => {
-      const item2 = result2.find(item2 => item2._id === item1._id);
+    const unchanged = result1.filter((item1) => {
+      const item2 = result2.find((item2) => item2._id === item1._id);
       return item2 && item1.rank === item2.rank;
     }).length;
-    const improved = result1.filter(item1 => {
-      const item2 = result2.find(item2 => item2._id === item1._id);
+    const improved = result1.filter((item1) => {
+      const item2 = result2.find((item2) => item2._id === item1._id);
       return item2 && item1.rank > item2.rank;
     }).length;
-    const worsened = result1.filter(item1 => {
-      const item2 = result2.find(item2 => item2._id === item1._id);
+    const worsened = result1.filter((item1) => {
+      const item2 = result2.find((item2) => item2._id === item1._id);
       return item2 && item1.rank < item2.rank;
     }).length;
 
@@ -211,32 +214,32 @@ export const VisualComparison = ({
       onlyInResult2,
       unchanged,
       improved,
-      worsened
+      worsened,
     });
   }, [result1, result2]);
 
-  // Update lines on window resize and after mounting  
+  // Update lines on window resize and after mounting
   useEffect(() => {
     // Mark component as mounted
     setMounted(true);
-    
+
     // Force re-render when window is resized to recalculate line positions
     const handleResize = () => {
       // Force a re-render by setting state
-      setDisplayField(curr => curr);
+      setDisplayField((curr) => curr);
     };
-    
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  
+
   // Update lines after component mounts to ensure all refs are loaded
   useEffect(() => {
     // Small delay to ensure DOM is fully rendered
     const timer = setTimeout(() => {
-      setDisplayField(curr => curr); // Force re-render
+      setDisplayField((curr) => curr); // Force re-render
     }, 100);
-    
+
     return () => clearTimeout(timer);
   }, [mounted]);
 
@@ -244,20 +247,20 @@ export const VisualComparison = ({
   const getStatusColor = (item, resultNum) => {
     if (resultNum === 1) {
       // For Result 1 items
-      const matchingItem = result2.find(r2 => r2._id === item._id);
-      if (!matchingItem) return "bg-yellow-300"; // Only in Result 1
-      
-      if (item.rank === matchingItem.rank) return "bg-blue-300"; // Same position
-      if (item.rank < matchingItem.rank) return "bg-red-300"; // Dropped in Result 2
-      return "bg-green-300"; // Improved in Result 2
+      const matchingItem = result2.find((r2) => r2._id === item._id);
+      if (!matchingItem) return 'bg-yellow-300'; // Only in Result 1
+
+      if (item.rank === matchingItem.rank) return 'bg-blue-300'; // Same position
+      if (item.rank < matchingItem.rank) return 'bg-red-300'; // Dropped in Result 2
+      return 'bg-green-300'; // Improved in Result 2
     } else {
       // For Result 2 items
-      const matchingItem = result1.find(r1 => r1._id === item._id);
-      if (!matchingItem) return "bg-purple-300"; // Only in Result 2
-      
-      if (item.rank === matchingItem.rank) return "bg-blue-300"; // Same position
-      if (item.rank > matchingItem.rank) return "bg-red-300"; // Improved from Result 1
-      return "bg-green-300"; // Dropped from Result 1
+      const matchingItem = result1.find((r1) => r1._id === item._id);
+      if (!matchingItem) return 'bg-purple-300'; // Only in Result 2
+
+      if (item.rank === matchingItem.rank) return 'bg-blue-300'; // Same position
+      if (item.rank > matchingItem.rank) return 'bg-red-300'; // Improved from Result 1
+      return 'bg-green-300'; // Dropped from Result 1
     }
   };
 
@@ -302,20 +305,29 @@ export const VisualComparison = ({
     <EuiPage>
       <EuiPageBody>
         <EuiPageContent>
-          <h3 className="text-lg font-semibold mb-2">Results for query: <em>{queryText}</em></h3>
+          <h3 className="text-lg font-semibold mb-2">
+            Results for query: <em>{queryText}</em>
+          </h3>
 
           {/* Field selector dropdown */}
           <div className="mb-4">
             <EuiFormRow label="Display Field:" id="fieldSelectorForm">
               <EuiSuperSelect
                 id="field-selector"
-                options={displayFields && displayFields.length > 0 
-                  ? displayFields.map((field) => ({
-                      value: field.value,
-                      inputDisplay: field.label,
-                      dropdownDisplay: field.label,
-                    }))
-                  : [{ value: '', inputDisplay: 'No fields available', dropdownDisplay: 'No fields available' }]
+                options={
+                  displayFields && displayFields.length > 0
+                    ? displayFields.map((field) => ({
+                        value: field.value,
+                        inputDisplay: field.label,
+                        dropdownDisplay: field.label,
+                      }))
+                    : [
+                        {
+                          value: '',
+                          inputDisplay: 'No fields available',
+                          dropdownDisplay: 'No fields available',
+                        },
+                      ]
                 }
                 valueOfSelected={displayField}
                 onChange={(value) => setDisplayField(value)}
@@ -326,9 +338,7 @@ export const VisualComparison = ({
           </div>
 
           {/* Summary section with Venn diagram style using CSS classes */}
-          <div className="mb-6">
-            {vennDiagram}
-          </div>
+          <div className="mb-6">{vennDiagram}</div>
 
           {/* Rank-based overlap visualization */}
           <div className="mb-6">
@@ -361,7 +371,7 @@ export const VisualComparison = ({
 
               {/* Connection lines */}
               <div className="w-1/3 relative">
-                <ConnectionLines 
+                <ConnectionLines
                   mounted={mounted}
                   result1={result1}
                   result2={result2}
@@ -392,19 +402,19 @@ export const VisualComparison = ({
 
           <div className="mt-4 flex gap-4 text-sm">
             <div className="flex items-center">
-              <div className="w-4 h-4 bg-blue-300 mr-1"></div> Same position
+              <div className="w-4 h-4 bg-blue-300 mr-1" /> Same position
             </div>
             <div className="flex items-center">
-              <div className="w-4 h-4 bg-green-300 mr-1"></div> Improved position
+              <div className="w-4 h-4 bg-green-300 mr-1" /> Improved position
             </div>
             <div className="flex items-center">
-              <div className="w-4 h-4 bg-red-300 mr-1"></div> Dropped position
+              <div className="w-4 h-4 bg-red-300 mr-1" /> Dropped position
             </div>
             <div className="flex items-center">
-              <div className="w-4 h-4 bg-yellow-300 mr-1"></div> Only in {resultText1}
+              <div className="w-4 h-4 bg-yellow-300 mr-1" /> Only in {resultText1}
             </div>
             <div className="flex items-center">
-              <div className="w-4 h-4 bg-purple-300 mr-1"></div> Only in {resultText2}
+              <div className="w-4 h-4 bg-purple-300 mr-1" /> Only in {resultText2}
             </div>
           </div>
 

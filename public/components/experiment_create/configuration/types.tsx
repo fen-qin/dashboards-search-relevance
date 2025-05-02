@@ -1,3 +1,7 @@
+/*
+ * Copyright OpenSearch Contributors
+ * SPDX-License-Identifier: Apache-2.0
+ */
 import { RouteComponentProps } from 'react-router-dom';
 
 export interface TemplateConfigurationProps extends RouteComponentProps {
@@ -28,15 +32,11 @@ export interface IndexOption {
 export interface ResultListComparisonFormData extends BaseFormData {}
 
 export interface UserBehaviorFormData extends BaseFormData {
-  startDate: string;
-  endDate: string;
-  collectSignal: string;
-  scoreThreshold: string;
+  judgmentId: string;
 }
 
 export interface LLMFormData extends BaseFormData {
   modelId: string;
-  scoreThreshold: string;
 }
 
 export type ConfigurationFormData =
@@ -58,4 +58,10 @@ export interface QuerySetOption {
 export interface SearchConfigOption {
   label: string;
   value: string;
+}
+
+export enum ExperimentType {
+  PAIRWISE_COMPARISON = 'PAIRWISE_COMPARISON',
+  LLM_EVALUATION = 'LLM_EVALUATION',
+  UBI_EVALUATION = 'UBI_EVALUATION',
 }

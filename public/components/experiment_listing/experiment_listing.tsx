@@ -13,16 +13,16 @@ import {
   EuiPageHeader,
   EuiButtonIcon,
 } from '@elastic/eui';
+import { RouteComponentProps, withRouter } from 'react-router-dom';
+import moment from 'moment';
 import {
   reactRouterNavigate,
   TableListView,
 } from '../../../../../src/plugins/opensearch_dashboards_react/public';
 import { CoreStart } from '../../../../../src/core/public';
-import { RouteComponentProps, withRouter } from 'react-router-dom';
 import { ServiceEndpoints } from '../../../common';
 import { DeleteModal } from '../common/DeleteModal';
 import { useConfig } from '../../contexts/date_format_context';
-import moment from 'moment';
 
 interface ExperimentListingProps extends RouteComponentProps {
   http: CoreStart['http'];
@@ -44,7 +44,6 @@ export const ExperimentListing: React.FC<ExperimentListingProps> = ({ http, hist
       const response = await http.delete(
         `${ServiceEndpoints.Experiments}/${experimentToDelete.id}`
       );
-      console.log('Delete successful:', response);
 
       // Close modal and clear state
       setShowDeleteModal(false);
@@ -86,13 +85,23 @@ export const ExperimentListing: React.FC<ExperimentListingProps> = ({ http, hist
       ),
     },
     {
-      field: 'searchConfigurationList',
+      field: 'results',
       name: 'Evaluation Type',
       dataType: 'string',
       sortable: true,
-      render: (searchConfigurationList: string[]) => {
-        const evaluationType =
-          searchConfigurationList.length === 2 ? 'Result List Comparison' : 'Quality Metrics';
+      render: (results: any) => {
+        if (!results || !results.metrics) return <EuiText size="s">-</EuiText>;
+
+        // Get the first query's metrics to determine the type
+        const firstQueryKey = results.queryTexts[0];
+        const firstQueryMetrics = results.metrics[firstQueryKey];
+
+        const evaluationType = firstQueryMetrics.pairwiseComparison
+          ? 'Result List Comparison'
+          : firstQueryMetrics.evaluation
+          ? 'Quality Metrics'
+          : '-';
+
         return <EuiText size="s">{evaluationType}</EuiText>;
       },
     },
