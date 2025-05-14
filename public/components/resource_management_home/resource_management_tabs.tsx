@@ -9,13 +9,16 @@ import { EuiTabs, EuiTab, EuiSpacer, EuiPanel } from '@elastic/eui';
 import { ResourceManagementTabsProps } from './types';
 import { SearchConfigurationListingWithRoute } from '../search_config_listing';
 import { QuerySetListingWithRoute } from '../query_set_listing';
-import { QuerySetCreateWithRouter } from '../query_set_create/query_set_create';
+import { QuerySetCreateWithRouter } from '../query_set_create';
 import { QuerySetView } from '../query_set_view/query_set_view';
-import { SearchConfigurationCreateWithRouter } from '../search_config_create/search_config_create';
+import { SearchConfigurationCreateWithRouter } from '../search_config_create';
 import { SearchConfigurationView } from '../search_config_view/search_config_view';
-import { TemplateCards } from '../experiment_create/template_card/template_cards';
+import { TemplateCards } from '../experiment_create';
 import ExperimentViewWithRouter from '../experiment_view/experiment_view';
 import ExperimentListingWithRoute from '../experiment_listing/experiment_listing';
+import { JudgmentCreateWithRouter } from '../judgment_create';
+import { JudgmentListingWithRoute } from '../judgment_listing';
+import { JudgmentView } from '../judgment_view';
 
 const TAB_STYLES = {
   mainTabs: {
@@ -63,6 +66,7 @@ export const ResourceManagementTabs = ({
     { id: 'experiment', name: 'Experiment' },
     { id: 'querySet', name: 'Query Set' },
     { id: 'searchConfiguration', name: 'Search Configuration' },
+    { id: 'judgment', name: 'Judgment' },
   ];
 
   const renderSubTabs = (tabKey: string, tabs: Array<{ id: string; label: string }>) => (
@@ -150,6 +154,30 @@ export const ResourceManagementTabs = ({
               )}
               {selectedSubTabs === 'create' ? (
                 <SearchConfigurationCreateWithRouter http={http} notifications={notifications} />
+              ) : (
+                <></>
+              )}
+            </EuiPanel>
+          </>
+        );
+
+      case 'judgment':
+        return (
+          <>
+            {renderSubTabs('judgment', [
+              { id: 'list', label: 'Manage Judgments' },
+              { id: 'create', label: 'Create a Judgment' },
+            ])}
+            <EuiSpacer size="m" />
+            <EuiPanel>
+              {selectedSubTabs === 'list' && entityAction != 'view' ? (
+                <JudgmentListingWithRoute http={http} />
+              ) : (
+                <></>
+              )}
+              {entityAction === 'view' ? <JudgmentView http={http} id={entityId}/> : <></>}
+              {selectedSubTabs === 'create' ? (
+                <JudgmentCreateWithRouter http={http} notifications={notifications} history={history}/>
               ) : (
                 <></>
               )}
